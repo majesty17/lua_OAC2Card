@@ -1,6 +1,7 @@
 --测试用
 
 init("0", 0);
+setDeviceOrient(1);
 luaExitIfCall(true);
 mSleep(1000);
 
@@ -38,9 +39,16 @@ end
 --判断是否出现对话框
 function if_hasdialog()
 	keepScreen(true);
-	color=getColor(547, 590);
-	sys_log(string.format("%x",color));
+	color1=getColor(547, 590);
+	color2=getColor(877, 567);
+	--sys_log(string.format("%x",color2));
 	keepScreen(false); 
+
+	if color1==0xb93800 and color2==0xffa122 then
+		return "true"
+	else
+		return "false"
+	end
 end
 
 --日志
@@ -49,7 +57,21 @@ function sys_log(msg)
 end
 
 function main()
-	if_hasdialog();
+	sys_log(if_hasdialog());
+
+	action_pick();
+	--fakeGPS(87.1478199292, 43.4912963982);
+	ret, input_1, input_2, input_3 = showUI("{\"style\":"
+		.."\"default\",\"views\":[{\"type\":\"Label\",\"text\":"
+		.."\"settings\",\"size\":25,\"align\":\"center\",\"color\":"
+		.."\"0,0,255\"},{\"type\":\"RadioGroup\",\"list\":"
+		.."\"option1,option2,option3,option4,option5,option6,option7\","
+		.."\"select\":\"1\"},{\"type\":\"Edit\",\"prompt\":\"Test\","
+		.."\"text\":\"Custom Text\",\"size\":15,\"align\":\"left\","
+		.."\"color\":\"255,0,0\"},{\"type\":\"CheckBoxGroup\",\"list\":"
+		.."\"option1,option2,option3,option4,option5,option6,option7\","
+		.."\"select\":\"3@5\"}]}");
+	toast("欢迎使用触动精灵！"); 
 end
 
 
