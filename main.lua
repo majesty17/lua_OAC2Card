@@ -1,230 +1,184 @@
 --测试用
 
-init("0", 0);
-setDeviceOrient(1);
+
+--做一些初始化
+init("0", 1);			--指定坐标系，横屏home右
+--setDeviceOrient(1);
 luaExitIfCall(true);
-mSleep(100);
+-- for ipad air 2 :2048×1536
+
+--全局变量
+
+glRunningFlag=true
 
 
 
---for var = 1,50 do
---    nLog("[DATE]"..var);--在编辑器的日志输入界面查看
---    mSleep(100);
---end
-
---nLog("GG...");
 
 
 --放夹子
 function action_trap()
-	touchDown(9, 732, 1783);
+	touchDown(9, 1783, 804);
 	mSleep(50);
-	touchUp(9, 732, 1783);
+	touchUp(9, 1783, 804);
 end
 
 --捡东西,跳,交互
 function action_pick()
-	touchDown(4, 92, 1956);
+	touchDown(4, 1956, 1444);
 	mSleep(50);
-	touchUp(4, 92, 1956);
+	touchUp(4, 1956, 1444);
 end
 
 --普通攻击
 function action_hit()
-	touchDown(3, 209, 1833);
+	touchDown(3, 1833, 1327);
 	mSleep(60);
-	touchUp(3, 209, 1833);
+	touchUp(3, 1833, 1327);
 end
 
 --判断是否出现对话框
 function if_hasdialog()
 	keepScreen(true);
-	color1=getColor(547, 590);
-	color2=getColor(877, 567);
-	--sys_log(string.format("%x",color2));
+	color1=getColor(590, 989);
+	color2=getColor(567, 659);
+	--sys_log(string.format("color1 is %x",color1));
+	--sys_log(string.format("color2 is %x",color2));
 	keepScreen(false); 
-
-	if color1==0xb93800 and color2==0xffa122 then
+	if color1==0xb93800 and color2==0xffa022 then
 		return "true"
 	else
 		return "false"
 	end
 end
 
+--如果出现对话框，关闭之
+function clear_dia()
+	if if_hasdialog()=="true" then
+	end
+end
+
+
 --日志
 function sys_log(msg)
 	nLog("[DATE] "..msg);
+	print("[DATE] "..msg);
+end
+
+--显示主对话框
+function show_dialog()
+	local sz = require("sz")
+	local json = sz.json
+	MyTable = {
+		["style"] = "default",
+		["width"] = 600,
+		["height"] = 600,
+		["orient"] = 1,
+		["config"] = "save_001.dat",
+		["timer"] = 10,
+		["title"] = "挂机模式",
+		views = {
+			{
+				["type"] = "RadioGroup",
+				["list"] = "方式1: 只捡东西,方式2: 捡东西+放夹子,方式3: 捡东西+攻击",
+				["select"] = "1",
+			}
+		}
+	}
+	local MyJsonString = json.encode(MyTable);
+	return showUI(MyJsonString);
+end
+
+--建立线程，控制停止
+function contral_thread()
+	local thread = require('thread')
+	--处理协程的错误
+	local thread_id = thread.create(function()
+
+			fwShowWnd("wida",300,300,500,500,1)
+			fwShowButton("wida","vid","停止挂机","FFFFFF","FF0000","",15,0,0,180,100)
+			while (true) do
+				local vid = fwGetPressedButton()
+				if vid == "vid" then
+					glRunningFlag=false; --停止主线程
+					break;
+				end
+			end
+			return 100
+		end,{
+			callBack = function()
+				--协程结束会调用，不论是错误、异常、正常结束
+				toast("协程结束了", 1);
+			end,
+			errorBack = function(err)
+				--协程错误结束，一般是引用空调用,err是字符串
+				toast("协程错误了:"..err,1);
+			end,
+			catchBack = function(exp)
+				--协程异常结束,异常是脚本调用了throw激发的,exp是table，exp.message是异常原因
+				local sz = require('sz')
+				local json = sz.json
+				toast("协程异常了\n"..json.encode(exp),1);
+			end
+		})
+end
+
+
+
+--真正开始做动作了
+function dowork(type)
+	toast("开始挂机，挂机模式:"..type,1);
+	glRunningFlag=true;
+	if type=="0" then
+		while glRunningFlag do
+			action_pick();
+			sys_log("take0");
+			mSleep(5000);
+		end
+	end
+	if type=="1" then
+		while glRunningFlag do
+			action_trap();
+			mSleep(3000);
+			action_pick();
+			mSleep(4000);
+			action_pick();
+			mSleep(4000);
+			action_pick();
+			mSleep(1500);
+			sys_log("take1");
+		end
+	end
+
+	if type=="2" then
+		while glRunningFlag do
+			action_pick();
+			mSleep(1000);
+			action_hit();
+			mSleep(3000);
+			sys_log("take2");
+		end
+	end
+
+	toast("挂机终止!",1)
+
 end
 
 function main()
 	sys_log(if_hasdialog());
 
-	local sz = require("sz")
-	local json = sz.json
-	w,h = getScreenSize();
-	MyTable = {
-		["style"]        = "default",
-		["rettype"]      = "table",
-		["width"]        = h/2,
-		["height"]       = w/2,
-		["config"]       = "save_01.dat",
-		["timer"]        = 99,
-		["orient"]       = 1,
-		["pagetype"]     = "multi",
-		["title"]        = "触动精灵脚本UI演示",
-		["cancelname"]   = "取消",
-		["okname"]       = "开始",
-		pages            =
-		{
-			{
-				{
-					["type"] = "Label",
-					["text"] = "第一页设置",
-					["size"] = 25,
-					["align"] = "center",
-					["color"] = "0,0,0",
-				},
-				{
-					["id"] = "a01",
-					["type"] = "RadioGroup",
-					["list"] = "选项1,选项2,选项3,选项4,选项5,选项6,选项7",
-					["select"] = "1",
-				},
-				{
-					["type"] = "Label",
-					["text"] = "请选择",
-					["width"] = 100,
-					["nowrap"] = 1,
-				},
-				{
-					["id"] = "year",
-					["type"] = "Edit",
-					["width"] = 100,
-					["prompt"] = "年",
-					["text"] = "1900",
-					["kbtype"] = "number",
-					["nowrap"] = 1,
-				},
-				{
-					["type"] = "Label",
-					["text"] = "年",
-					["width"] = 30,
-					["nowrap"] = 1,
-				},
-				{
-					["id"] = "mon",
-					["type"] = "ComboBox",
-					["width"] = 130,
-					["list"] = "一月,二月,三月,四月,五月,六月,七月,八月,九月,十月,十一月,十二月",
-					["select"] = "1",
-					["nowrap"] = 1,
-				},
-				{
-					["type"] = "Label",
-					["text"] = "月",
-					["width"] = 30,
-					["nowrap"] = 1,
-				},
-				{
-					["id"] = "day",
-					["type"] = "ComboBox",
-					["width"] = 110,
-					["list"] = "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31",
-					["select"] = "1",
-					["nowrap"] = 1,
-				},
-				{
-					["type"] = "Label",
-					["text"] = "日",
-					["width"] = 30,
-				},
-				{
-					["type"] = "Label",
-					["text"] = "请选择性别:",
-					["width"] = 170,
-					["nowrap"] = 1,
-				},
-				{
-					["id"] = "sex",
-					["type"] = "RadioGroup",
-					["list"] = "男,女,人妖",
-					["select"] = "1",
-				},
-				},{
-				{
-					["type"] = "Label",
-					["text"] = "第二页设置",
-					["size"] = 25,
-					["align"] = "center",
-					["color"] = "0,0,0",
-				},
-				{
-					["id"] = "edit01",
-					["type"] = "Edit",
-					["prompt"] = "请输入一个字母",
-					["text"] = "默认值",
-					["kbtype"] = "ascii",
-				},
-				{
-					["id"] = "edit02",
-					["type"] = "Edit",
-					["prompt"] = "请输入一个数字",
-					["text"] = "默认值",
-					["kbtype"] = "number",
-				},
-				{
-					["type"] = "Label",
-					["text"] = "请选择兵种",
-					["size"] = 25,
-					["align"] = "center",
-					["color"] = "0,0,0",
-				},
-				{
-					["id"] = "arm",
-					["type"] = "CheckBoxGroup",
-					["list"] = "兵种1,兵种2,兵种3,兵种4,兵种5,兵种6,兵种7,兵种8,兵种9,兵种10,兵种11,兵种12",
-					["images"] = "a.png,b.png,c.png,d.png,e.png,f.png,g.png,h.png,i.png,j.png,k.png,l.png",
-					["select"] = "3@5",
-					["scale"] = 0.4,
-				},
-				},{
-				{
-					["type"] = "Label",
-					["text"] = "第三页设置",
-					["size"] = 25,
-					["align"] = "center",
-					["color"] = "0,0,0",
-				},
-				{
-					["id"] = "a02",
-					["type"] = "CheckBoxGroup",
-					["list"] = "选项1,选项2,选项3,选项4,选项5,选项6,选项7",
-					["select"] = "3@5",
-				},
-				{
-					["id"] = "cb01",
-					["type"] = "ComboBox",
-					["list"] = "选项1,选项2,选项3",
-					["select"] = "1",
-					["data"] = "子选项1,子选项2,子选项3,子选项4#子选项5,子选项6,子选项7#子选项8,子选项9",
-					["source"] = "test"
-				},
-				{
-					["id"] = "cb02",
-					["type"] = "ComboBox",
-					["select"] = "1",
-					["dataSource"] = "test"
-				},
-			}
-		}   
-	}
-	local MyJsonString = json.encode(MyTable);
-	UIret,values = showUI(MyJsonString)
-	if UIret == 1 then
-		nLog("年:"..values.year)
-		nLog("月:"..values.mon)
-		nLog("日:"..values.day)
+
+	ret, worktype= show_dialog();
+	if ret==1 then
+		--根据不同的动作，执行
+		--contral_thread(); 先不搞多线程了，有坑
+		dowork(worktype);
 	end
+
+	sys_log(ret..worktype);
+--	while true do
+--		sys_log("log");
+--		mSleep(1000);
+--	end
 end
 
 
