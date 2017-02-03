@@ -36,6 +36,27 @@ function action_hit()
 	touchUp(3, 1833, 1327);
 end
 
+--喊话
+function action_say(thing)
+	touchDown(2,1032, 1467);
+	mSleep(100);
+	touchUp(2, 1032, 1467);
+	
+	mSleep(1000);
+	
+	touchDown(2,1032, 1467);
+	mSleep(100);
+	touchUp(2, 1032, 1467);
+	
+	mSleep(1000);
+	
+	inputText(thing.."#ENTER#");
+	
+	mSleep(1000);
+	
+end
+
+
 --判断是否出现对话框
 function if_hasdialog()
 	keepScreen(true);
@@ -74,21 +95,27 @@ function show_dialog()
 		["height"] = 600,
 		["orient"] = 1,
 		["config"] = "save_001.dat",
-		["timer"] = 10,
-		["title"] = "挂机模式",
+		["timer"] = 30,
+		["title"] = "功能模式",
 		views = {
 			{
 				["type"] = "RadioGroup",
-				["list"] = "方式1: 只捡东西,方式2: 捡东西+放夹子,方式3: 捡东西+攻击",
+				["list"] = "方式1: 只捡东西,方式2: 捡东西+放夹子,方式3: 捡东西+攻击,自动喊话",
 				["select"] = "1",
-			}
+			},
+			{
+                ["type"] = "Edit",
+                ["prompt"] = "喊话内容",
+                ["text"] = "100 1346 s45 弓求组",
+                ["kbtype"] = "default",
+            },
 		}
 	}
 	local MyJsonString = json.encode(MyTable);
 	return showUI(MyJsonString);
 end
 
---建立线程，控制停止
+--建立线程，控制停止（废弃）
 function contral_thread()
 	local thread = require('thread')
 	--处理协程的错误
@@ -125,7 +152,7 @@ end
 
 
 --真正开始做动作了
-function dowork(type)
+function dowork(type,extra)
 	toast("开始挂机，挂机模式:"..type,1);
 	glRunningFlag=true;
 	if type=="0" then
@@ -159,6 +186,14 @@ function dowork(type)
 		end
 	end
 
+	if type=="3" then
+		while glRunningFlag do
+			action_say(extra);
+			mSleep(58000);
+			sys_log("take3");
+		end
+	end
+	
 	toast("挂机终止!",1)
 
 end
@@ -167,11 +202,11 @@ function main()
 	sys_log(if_hasdialog());
 
 
-	ret, worktype= show_dialog();
+	ret, worktype, extra= show_dialog();
 	if ret==1 then
 		--根据不同的动作，执行
 		--contral_thread(); 先不搞多线程了，有坑
-		dowork(worktype);
+		dowork(worktype,extra);
 	end
 
 	sys_log(ret..worktype);

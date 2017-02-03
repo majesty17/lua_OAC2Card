@@ -1,8 +1,5 @@
 [res]
 [lib]
 [file]
-03-卡牌-夹捡.lua
-02-卡牌-只捡.lua
-01-卡牌-打捡.lua
 main.lua
 
