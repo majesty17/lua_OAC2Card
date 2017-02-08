@@ -1,19 +1,19 @@
---测试用
-
+-- name    ac2辅助
+-- author  Etrom
+-- date    2017/2/8
+-- info    for ipad air 2 :2048×1536
 
 --做一些初始化
 init("0", 1);			--指定坐标系，横屏home右
 --setDeviceOrient(1);
 luaExitIfCall(true);
--- for ipad air 2 :2048×1536
 
 --全局变量
-
 glRunningFlag=true
 
 
 
-
+--zone1:动作定义
 
 --放夹子
 function action_trap()
@@ -56,6 +56,16 @@ function action_say(thing)
 	
 end
 
+--如果出现对话框，关闭之
+function action_close_dia()
+	if if_hasdialog()=="true" then
+		touchDown(3, 748, 941);
+		mSleep(70);
+		touchUp(3, 748, 941);
+	end
+end
+
+--zone2:状态判断
 
 --判断是否出现对话框
 function if_hasdialog()
@@ -72,18 +82,16 @@ function if_hasdialog()
 	end
 end
 
---如果出现对话框，关闭之
-function clear_dia()
-	if if_hasdialog()=="true" then
-	end
-end
 
+--zone3:系统杂项
 
 --日志
 function sys_log(msg)
 	nLog("[DATE] "..msg);
 	print("[DATE] "..msg);
 end
+
+--zone4:主对话框
 
 --显示主对话框
 function show_dialog()
@@ -160,6 +168,8 @@ function dowork(type,extra)
 			action_pick();
 			sys_log("take0");
 			mSleep(5000);
+			action_close_dia();
+			sys_log("take0");
 		end
 	end
 	if type=="1" then
@@ -172,6 +182,7 @@ function dowork(type,extra)
 			mSleep(4000);
 			action_pick();
 			mSleep(1500);
+			action_close_dia();
 			sys_log("take1");
 		end
 	end
@@ -182,11 +193,13 @@ function dowork(type,extra)
 			mSleep(1000);
 			action_hit();
 			mSleep(3000);
+			action_close_dia();
 			sys_log("take2");
 		end
 	end
 
 	if type=="3" then
+		--喊话
 		while glRunningFlag do
 			action_say(extra);
 			mSleep(58000);
@@ -198,22 +211,22 @@ function dowork(type,extra)
 
 end
 
+
+--zone5:main
+
 function main()
-	sys_log(if_hasdialog());
+	sys_log("has dialog? "..if_hasdialog());
 
-
+	--弹出主程序面板
 	ret, worktype, extra= show_dialog();
+	sys_log(ret..worktype..extra);
 	if ret==1 then
 		--根据不同的动作，执行
 		--contral_thread(); 先不搞多线程了，有坑
 		dowork(worktype,extra);
 	end
 
-	sys_log(ret..worktype);
---	while true do
---		sys_log("log");
---		mSleep(1000);
---	end
+	
 end
 
 
