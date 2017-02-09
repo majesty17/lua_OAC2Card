@@ -42,6 +42,48 @@ function action_say(thing)
 	mSleep(1000);
 end
 
+--清理包裹
+function action_clean_bag()
+	-- 打开主配置
+	tap(44,797);
+	mSleep(500);
+	-- 打开背包
+	tap(355,661);
+	mSleep(500);
+	-- 打开背包-装备
+	tap(229,472);
+	mSleep(1000);
+	sysLog("进入背包，开始清理中...")
+	-- 逐个删除
+	while (true) do
+		--拿到第一个格子的颜色，
+		if multiColor({{403,484,0xd8d8d6},{403,522,0xdcdcd8}}) == true then
+			break;
+		end
+		
+		-- 点第一个，搜索删除图标，点击
+		tap(397,508);
+		mSleep(200);
+		tap(1528,436);
+		mSleep(200);
+		tap(1304,945);
+		mSleep(2000);
+	end
+	
+	
+	--返回两次
+	tap(76,61);
+	mSleep(500);
+	tap(76,61);
+	mSleep(500);
+	sysLog("背包清理完毕。");
+end
+
+
+
+
+
+
 --如果出现对话框，关闭之
 function action_close_dia()
 	tap(748,941);
@@ -192,6 +234,12 @@ end
 --zone5:main
 
 function main()
+	--测试区
+	--action_clean_bag();
+	--return;
+	--测试区
+	
+	
 	
 	--弹出主程序面板
 	ret, worktype, extra= show_dialog();
