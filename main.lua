@@ -3,6 +3,8 @@
 -- date    2017/2/8
 -- info    for ipad air 2 :2048×1536
 
+require "TSLib"
+
 --做一些初始化
 init("0", 1);			--指定坐标系，横屏home右
 --setDeviceOrient(1);
@@ -17,71 +19,35 @@ glRunningFlag=true
 
 --放夹子
 function action_trap()
-	touchDown(9, 1783, 804);
-	mSleep(50);
-	touchUp(9, 1783, 804);
+	tap(1783, 804);
 end
 
 --捡东西,跳,交互
 function action_pick()
-	touchDown(4, 1956, 1444);
-	mSleep(50);
-	touchUp(4, 1956, 1444);
+	tap(1956, 1444);
 end
 
 --普通攻击
 function action_hit()
-	touchDown(3, 1833, 1327);
-	mSleep(60);
-	touchUp(3, 1833, 1327);
+	tap(1833, 1327);
 end
 
 --喊话
 function action_say(thing)
-	touchDown(2,1032, 1467);
-	mSleep(100);
-	touchUp(2, 1032, 1467);
-	
+	tap(1032, 1467,100);
 	mSleep(1000);
-	
-	touchDown(2,1032, 1467);
-	mSleep(100);
-	touchUp(2, 1032, 1467);
-	
+	tap(1032, 1467,100);
 	mSleep(1000);
-	
 	inputText(thing.."#ENTER#");
-	
 	mSleep(1000);
-	
 end
 
 --如果出现对话框，关闭之
 function action_close_dia()
-	if if_hasdialog()=="true" then
-		touchDown(3, 748, 941);
-		mSleep(70);
-		touchUp(3, 748, 941);
-	end
+	tap(748,941);
 end
 
 --zone2:状态判断
-
---判断是否出现对话框
-function if_hasdialog()
-	keepScreen(true);
-	color1=getColor(590, 989);
-	color2=getColor(567, 659);
-	--sys_log(string.format("color1 is %x",color1));
-	--sys_log(string.format("color2 is %x",color2));
-	keepScreen(false); 
-	if color1==0xb93800 and color2==0xffa022 then
-		return "true"
-	else
-		return "false"
-	end
-end
-
 
 --zone3:系统杂项
 
@@ -168,7 +134,6 @@ function contral_thread()
 end
 
 
-
 --真正开始做动作了
 function dowork(type,extra)
 	toast("开始挂机，挂机模式:"..type,1);
@@ -227,9 +192,7 @@ end
 --zone5:main
 
 function main()
-	--sys_log("has dialog? "..if_hasdialog());
-
-
+	
 	--弹出主程序面板
 	ret, worktype, extra= show_dialog();
 	sys_log(ret..worktype..extra);
@@ -239,7 +202,6 @@ function main()
 		dowork(worktype,extra);
 	end
 
-	
 end
 
 
