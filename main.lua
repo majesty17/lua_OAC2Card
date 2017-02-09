@@ -99,22 +99,32 @@ function show_dialog()
 	local json = sz.json
 	MyTable = {
 		["style"] = "default",
-		["width"] = 600,
-		["height"] = 600,
+		["width"] = 640,
+		["height"] = 650,
 		["orient"] = 1,
-		["config"] = "save_001.dat",
-		["timer"] = 30,
-		["title"] = "功能模式",
+		["config"] = "save_oac2helper.dat",
+		["timer"] = 99,
+		["title"] = "OAC2辅助 - by Etrom",
 		views = {
 			{
 				["type"] = "RadioGroup",
-				["list"] = "方式1: 只捡东西,方式2: 捡东西+放夹子,方式3: 捡东西+攻击,自动喊话",
+				["list"] = 	"卡牌挂机方式1: 只捡东西                             ,"..
+							"卡牌挂机方式2: 捡东西+放夹子                        ,"..
+							"卡牌挂机方式3: 捡东西+普通攻击                      ,"..
+							"操作1: 自动世界喊话                                 ",
 				["select"] = "1",
 			},
+			{
+                ["type"] = "Label",
+                ["text"] = "喊话内容",
+				["width"] = 130,
+				["nowrap"] = 1,
+            },
 			{
                 ["type"] = "Edit",
                 ["prompt"] = "喊话内容",
                 ["text"] = "100 1346 s45 弓求组",
+				["width"] = 400,
                 ["kbtype"] = "default",
             },
 		}
@@ -206,7 +216,9 @@ function dowork(type,extra)
 			sys_log("take3");
 		end
 	end
-	
+	if type=="?" then
+		--
+	end
 	toast("挂机终止!",1)
 
 end
@@ -215,7 +227,8 @@ end
 --zone5:main
 
 function main()
-	sys_log("has dialog? "..if_hasdialog());
+	--sys_log("has dialog? "..if_hasdialog());
+
 
 	--弹出主程序面板
 	ret, worktype, extra= show_dialog();
