@@ -1,6 +1,6 @@
 -- name    ac2辅助
 -- author  Etrom
--- date    2017/2/8
+-- date    2017/2/14
 -- info    for ipad air 2 :2048×1536
 
 require "TSLib"
@@ -11,7 +11,8 @@ init("0", 1);			--指定坐标系，横屏home右
 luaExitIfCall(true);
 
 --全局变量
-glRunningFlag=true
+glRunningFlag=true;
+glLastClearBagTime=0;
 
 
 
@@ -44,6 +45,16 @@ end
 
 --清理包裹
 function action_clean_bag()
+	
+	now=os.time();
+	if (now-glLastClearBagTime)<7200 then
+		sys_log("当前时间差: "..(now-glLastClearBagTime)..", 未到清理时间。");
+		return
+	end
+	
+	--更新清理时间
+	glLastClearBagTime=now;
+	
 	-- 打开主配置
 	tap(44,797);
 	mSleep(500);
@@ -53,7 +64,7 @@ function action_clean_bag()
 	-- 打开背包-装备
 	tap(229,472);
 	mSleep(1000);
-	sysLog("进入背包，开始清理中...")
+	sys_log("进入背包，开始清理中...")
 	-- 逐个删除
 	while (true) do
 		--拿到第一个格子的颜色，
@@ -70,13 +81,12 @@ function action_clean_bag()
 		mSleep(2000);
 	end
 	
-	
 	--返回两次
 	tap(76,61);
 	mSleep(500);
 	tap(76,61);
 	mSleep(500);
-	sysLog("背包清理完毕。");
+	sys_log("背包清理完毕。");
 end
 
 
@@ -107,8 +117,8 @@ function show_dialog()
 	local json = sz.json
 	MyTable = {
 		["style"] = "default",
-		["width"] = 640,
-		["height"] = 650,
+		["width"] = 690,
+		["height"] = 750,
 		["orient"] = 1,
 		["config"] = "save_oac2helper.dat",
 		["timer"] = 99,
@@ -116,9 +126,9 @@ function show_dialog()
 		views = {
 			{
 				["type"] = "RadioGroup",
-				["list"] = 	"卡牌挂机方式1: 只捡东西                             ,"..
-							"卡牌挂机方式2: 捡东西+放夹子                        ,"..
-							"卡牌挂机方式3: 捡东西+普通攻击                      ,"..
+				["list"] = 	"卡牌挂机1: 只捡东西（每5秒捡一次）                  ,"..
+							"卡牌挂机2: 捡东西+放夹子（第二排第一个技能）        ,"..
+							"卡牌挂机3: 捡东西+普通攻击（可能会跑走）            ,"..
 							"操作1: 自动世界喊话                                 ",
 				["select"] = "1",
 			},
@@ -132,8 +142,15 @@ function show_dialog()
                 ["type"] = "Edit",
                 ["prompt"] = "喊话内容",
                 ["text"] = "100 1346 s45 弓求组",
-				["width"] = 400,
+				["width"] = 450,
                 ["kbtype"] = "default",
+            },
+			{
+                ["type"] = "Label",
+                ["text"] = 	"注意：自动清包目前只能清理装备栏的东西，自动进行逐个删除；挂机前请确认装备栏没有重要物品！"..
+							"清包周期为2小时",
+				["width"] = 625,
+				["size"] = 14,
             },
 		}
 	}
@@ -141,39 +158,6 @@ function show_dialog()
 	return showUI(MyJsonString);
 end
 
---建立线程，控制停止（废弃）
-function contral_thread()
-	local thread = require('thread')
-	--处理协程的错误
-	local thread_id = thread.create(function()
-
-			fwShowWnd("wida",300,300,500,500,1)
-			fwShowButton("wida","vid","停止挂机","FFFFFF","FF0000","",15,0,0,180,100)
-			while (true) do
-				local vid = fwGetPressedButton()
-				if vid == "vid" then
-					glRunningFlag=false; --停止主线程
-					break;
-				end
-			end
-			return 100
-		end,{
-			callBack = function()
-				--协程结束会调用，不论是错误、异常、正常结束
-				toast("协程结束了", 1);
-			end,
-			errorBack = function(err)
-				--协程错误结束，一般是引用空调用,err是字符串
-				toast("协程错误了:"..err,1);
-			end,
-			catchBack = function(exp)
-				--协程异常结束,异常是脚本调用了throw激发的,exp是table，exp.message是异常原因
-				local sz = require('sz')
-				local json = sz.json
-				toast("协程异常了\n"..json.encode(exp),1);
-			end
-		})
-end
 
 
 --真正开始做动作了
@@ -183,9 +167,9 @@ function dowork(type,extra)
 	if type=="0" then
 		while glRunningFlag do
 			action_pick();
-			sys_log("take0");
 			mSleep(5000);
 			action_close_dia();
+			action_clean_bag();
 			sys_log("take0");
 		end
 	end
@@ -200,6 +184,7 @@ function dowork(type,extra)
 			action_pick();
 			mSleep(1500);
 			action_close_dia();
+			action_clean_bag();
 			sys_log("take1");
 		end
 	end
@@ -207,10 +192,11 @@ function dowork(type,extra)
 	if type=="2" then
 		while glRunningFlag do
 			action_pick();
-			mSleep(1000);
+			mSleep(1500);
 			action_hit();
-			mSleep(3000);
+			mSleep(4000);
 			action_close_dia();
+			action_clean_bag();
 			sys_log("take2");
 		end
 	end
@@ -239,14 +225,13 @@ function main()
 	--return;
 	--测试区
 	
-	
-	
 	--弹出主程序面板
 	ret, worktype, extra= show_dialog();
-	sys_log(ret..worktype..extra);
+	sys_log("对话框输出: "..ret..worktype..extra);
 	if ret==1 then
 		--根据不同的动作，执行
-		--contral_thread(); 先不搞多线程了，有坑
+		--设定上次清理时间为当前时间
+		glLastClearBagTime=os.time();
 		dowork(worktype,extra);
 	end
 
