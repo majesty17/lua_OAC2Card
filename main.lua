@@ -47,7 +47,7 @@ end
 function action_clean_bag()
 	
 	now=os.time();
-	if (now-glLastClearBagTime)<7200 then
+	if (now-glLastClearBagTime)<3600 then
 		sys_log("当前时间差: "..(now-glLastClearBagTime)..", 未到清理时间。");
 		return
 	end
@@ -68,17 +68,24 @@ function action_clean_bag()
 	-- 逐个删除
 	while (true) do
 		--拿到第一个格子的颜色，
-		if multiColor({{403,484,0xd8d8d6},{403,522,0xdcdcd8}}) == true then
+		if multiColor({
+					{  397,  503, 0xddddda},
+					{  357,  547, 0xc4c5bd},
+					{  393,  453, 0xced6d5},
+					{  337,  501, 0xc8c9c4},
+					{  396,  555, 0xd2d2cd},
+					{  441,  507, 0xcacac5}
+				}) == true then
 			break;
 		end
 		
 		-- 点第一个，搜索删除图标，点击
 		tap(397,508);
-		mSleep(200);
+		mSleep(120);
 		tap(1528,436);
-		mSleep(200);
+		mSleep(120);
 		tap(1304,945);
-		mSleep(2000);
+		mSleep(1800);
 	end
 	
 	--返回两次
@@ -89,7 +96,12 @@ function action_clean_bag()
 	sys_log("背包清理完毕。");
 end
 
-
+--去花园躲一躲(todo)
+function action_hide_in_garden()
+	-- 进去
+	-- 等一段时间
+	--出来
+end
 
 
 
@@ -105,8 +117,8 @@ end
 
 --日志
 function sys_log(msg)
-	nLog("[DATE] "..msg);
-	print("[DATE] "..msg);
+	nLog("[DATE] "..msg)
+	toast("[DATE] "..msg,1)
 end
 
 --zone4:主对话框
@@ -118,7 +130,7 @@ function show_dialog()
 	MyTable = {
 		["style"] = "default",
 		["width"] = 690,
-		["height"] = 750,
+		["height"] = 790,
 		["orient"] = 1,
 		["config"] = "save_oac2helper.dat",
 		["timer"] = 99,
@@ -129,7 +141,8 @@ function show_dialog()
 				["list"] = 	"卡牌挂机1: 只捡东西（每5秒捡一次）                  ,"..
 							"卡牌挂机2: 捡东西+放夹子（第二排第一个技能）        ,"..
 							"卡牌挂机3: 捡东西+普通攻击（可能会跑走）            ,"..
-							"操作1: 自动世界喊话                                 ",
+							"操作1: 自动世界喊话                                 ,"..
+							"操作2: 清包(no use)",
 				["select"] = "1",
 			},
 			{
@@ -148,7 +161,7 @@ function show_dialog()
 			{
                 ["type"] = "Label",
                 ["text"] = 	"注意：自动清包目前只能清理装备栏的东西，自动进行逐个删除；挂机前请确认装备栏没有重要物品！"..
-							"清包周期为2小时",
+							"清包周期为1小时",
 				["width"] = 625,
 				["size"] = 14,
             },
@@ -162,7 +175,7 @@ end
 
 --真正开始做动作了
 function dowork(type,extra)
-	toast("开始挂机，挂机模式:"..type,1);
+	sys_log("开始挂机，挂机模式:"..type);
 	glRunningFlag=true;
 	if type=="0" then
 		while glRunningFlag do
@@ -170,7 +183,6 @@ function dowork(type,extra)
 			mSleep(5000);
 			action_close_dia();
 			action_clean_bag();
-			sys_log("take0");
 		end
 	end
 	if type=="1" then
@@ -185,7 +197,6 @@ function dowork(type,extra)
 			mSleep(1500);
 			action_close_dia();
 			action_clean_bag();
-			sys_log("take1");
 		end
 	end
 
@@ -197,7 +208,6 @@ function dowork(type,extra)
 			mSleep(4000);
 			action_close_dia();
 			action_clean_bag();
-			sys_log("take2");
 		end
 	end
 
@@ -206,13 +216,12 @@ function dowork(type,extra)
 		while glRunningFlag do
 			action_say(extra);
 			mSleep(58000);
-			sys_log("take3");
 		end
 	end
 	if type=="?" then
 		--
 	end
-	toast("挂机终止!",1)
+	sys_log("挂机终止!")
 
 end
 
@@ -227,7 +236,7 @@ function main()
 	
 	--弹出主程序面板
 	ret, worktype, extra= show_dialog();
-	sys_log("对话框输出: "..ret..worktype..extra);
+	--sys_log("对话框输出: "..ret..worktype..extra);
 	if ret==1 then
 		--根据不同的动作，执行
 		--设定上次清理时间为当前时间
