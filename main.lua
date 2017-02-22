@@ -103,7 +103,13 @@ function action_hide_in_garden()
 	--出来
 end
 
-
+--自动加血
+function action_add_blood()
+	if getColor(56,   72) ~= 0x69ff67 then 
+        sys_log("开始加血！");
+        tap(1956,639);
+	end	
+end
 
 
 --如果出现对话框，关闭之
@@ -182,6 +188,7 @@ function dowork(type,extra)
 			action_pick();
 			mSleep(5000);
 			action_close_dia();
+			action_add_blood();
 			action_clean_bag();
 		end
 	end
@@ -196,6 +203,7 @@ function dowork(type,extra)
 			action_pick();
 			mSleep(1500);
 			action_close_dia();
+			action_add_blood();
 			action_clean_bag();
 		end
 	end
@@ -207,6 +215,7 @@ function dowork(type,extra)
 			action_hit();
 			mSleep(4000);
 			action_close_dia();
+			action_add_blood();
 			action_clean_bag();
 		end
 	end
