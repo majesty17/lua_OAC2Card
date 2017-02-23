@@ -66,6 +66,7 @@ function action_clean_bag()
 	mSleep(1000);
 	sys_log("进入背包，开始清理中...")
 	-- 逐个删除
+	i=0;
 	while (true) do
 		--拿到第一个格子的颜色，
 		if multiColor({
@@ -81,11 +82,16 @@ function action_clean_bag()
 		
 		-- 点第一个，搜索删除图标，点击
 		tap(397,508);
-		mSleep(120);
+		mSleep(200);
 		tap(1528,436);
-		mSleep(120);
+		mSleep(200);
 		tap(1304,945);
-		mSleep(1800);
+		mSleep(2000);
+		i=i+1;
+		if i>40 then
+			break
+		end
+		
 	end
 	
 	--返回两次
